@@ -5,7 +5,7 @@ gemspec
 
 group :test do
   gem 'pg'
-  gem 'activerecord'
+  gem 'activerecord', :require => "active_record"
   gem 'activesupport'
   gem 'test-unit'
 	gem 'cucumber'
