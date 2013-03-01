@@ -1,0 +1,6 @@
+test:
+  adapter: em_postgresql
+  database: cachely_test
+  host: localhost
+  pool: 60
+

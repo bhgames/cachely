@@ -1,10 +1,8 @@
-
-base_dir = File.expand_path(File.join(File.dirname(__FILE__), "../.."))
-
-require 'pry'
-require 'test/unit'
+require "rubygems"
+require "bundler"
+Bundler.require(:default, :test)
 require 'yaml'
-require 'active_support'
+base_dir = File.expand_path(File.join(File.dirname(__FILE__), "../.."))
 require base_dir + "/lib/cachely.rb"
 
 class BaseTest < ActiveSupport::TestCase

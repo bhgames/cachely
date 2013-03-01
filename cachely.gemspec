@@ -14,10 +14,4 @@ Gem::Specification.new do |gem|
   gem.name          = "cachely"
   gem.require_paths = ["lib"]
   gem.version       = Cachely::VERSION
-
-  gem.add_dependency "test-unit"
-  gem.add_dependency "rake"
-  gem.add_dependency "spork"
-  gem.add_dependency "spork-testunit"
-  gem.add_dependency "pry"
 end
