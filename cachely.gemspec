@@ -14,5 +14,7 @@ Gem::Specification.new do |gem|
   gem.name          = "cachely"
   gem.require_paths = ["lib"]
   gem.version       = Cachely::VERSION
-  gem.add_dependency "unified-redis"
+  gem.add_dependency "redis", '~> 3.0.1'
+  gem.add_dependency "hiredis", '~> 0.4.5'
+  gem.add_dependency "em-synchrony"
 end
