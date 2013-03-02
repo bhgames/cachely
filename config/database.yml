@@ -2,5 +2,6 @@ test:
   adapter: postgresql
   database: cachely_test
   host: localhost
+  password: pi
   pool: 60
 

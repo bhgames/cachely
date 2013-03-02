@@ -1,7 +1,9 @@
 class DummyClass
   include Cachely
-  attr_accessor :random_no
   cachely :test_function_num, time: 3.minutes
+  
+  attr_accessor :random_no
+  
   #cachely :test_function_array, time: 2.minutes
   #cachely :test_function_hash, time: 2.minutes
   #cachely :test_function_string, time: 3.minutes
@@ -11,7 +13,7 @@ class DummyClass
 
   def to_json
     {
-      "random_no": self.random_no
+      "random_no" => self.random_no
     }
   end
   

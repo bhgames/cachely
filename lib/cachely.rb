@@ -1,6 +1,9 @@
 require_relative "cachely/version"
 require_relative 'cachely/mechanics'
-require 'unified-redis'
+require 'redis'
+require 'hiredis'
+require 'em-synchrony'
+require 'json'
 module Cachely
   module ClassMethods
     
@@ -10,7 +13,7 @@ module Cachely
     # @name [Symbol] fcn name
     # @return nil
     def method_added(name)
-      if(@cachely_fcns.include?(name) and !@cachely_fcns_added.include?(name))
+      if(@cachely_fcns and @cachely_fcns.include?(name) and !@cachely_fcns_added.include?(name))
         @cachely_fcns_added << name #this method'll get called when we do define method below
         #this halts that.
 
@@ -32,7 +35,7 @@ module Cachely
     # @return [Array] Array of current fcns to be added.
     def cachely(fcn, opts = {}, &extension)
       @cachely_fcns_added ||= []
-      @cachely_fcns = []
+      @cachely_fcns ||= []
       @cachely_fcns << fcn
     end
   end

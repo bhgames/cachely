@@ -35,18 +35,20 @@ class ConversionsTest < BaseTest
   end
   
   test "primitives conversion" do
-    assert_equal("Boolean:true", Cachely::Mechanics.map_param_to_s(true))
-    assert_equal("Boolean:false", Cachely::Mechanics.map_param_to_s(false))
+    assert_equal("TrueClass:true", Cachely::Mechanics.map_param_to_s(true))
+    assert_equal("FalseClass:false", Cachely::Mechanics.map_param_to_s(false))
     assert_equal("Fixnum:1", Cachely::Mechanics.map_param_to_s(1))
     assert_equal("Float:1.1", Cachely::Mechanics.map_param_to_s(1.1))
     assert_equal("String:1", Cachely::Mechanics.map_param_to_s("1"))   
     assert_equal("NilClass:nil", Cachely::Mechanics.map_param_to_s(nil))    
-    assert_equal(true, Cachely::Mechanics.map_s_to_param("Boolean:true"))
-    assert_equal(false, Cachely::Mechanics.map_s_to_param("Boolean:false"))
+    assert_equal("Symbol:shit", Cachely::Mechanics.map_param_to_s(:shit))    
+    assert_equal(true, Cachely::Mechanics.map_s_to_param("TrueClass:true"))
+    assert_equal(false, Cachely::Mechanics.map_s_to_param("FalseClass:false"))
     assert_equal(1, Cachely::Mechanics.map_s_to_param("Fixnum:1"))
     assert_equal(1.1, Cachely::Mechanics.map_s_to_param("Float:1.1"))
     assert_equal("1", Cachely::Mechanics.map_s_to_param("String:1"))
     assert_equal("1:2", Cachely::Mechanics.map_s_to_param("String:1:2"))
+    assert_equal(:shit, Cachely::Mechanics.map_s_to_param("Symbol:shit"))
     assert_equal(nil, Cachely::Mechanics.map_s_to_param("NilClass:nil"))
     
   end

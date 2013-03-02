@@ -6,7 +6,7 @@ module Cachely
     #
     # @opt [Hash<Symbol>] 
     # @return [Boolean] success or not
-    def connect(opts = {})
+    def self.connect(opts = {})
       @redis ||= Redis.new( :driver => :hiredis,
         :host => opts[:host], 
         :port => opts[:port],
@@ -17,7 +17,7 @@ module Cachely
     # Grab current redis instance. Has ability to reconnect for you if it fails.
     #
     # @return [Redis], instance of Redis client.
-    def redis
+    def self.redis
       @tries = 0 unless @tries
       begin
         @redis.get("test") #tests to see if we're still authed.
@@ -36,7 +36,7 @@ module Cachely
     # @method [String,Symbol] the method name
     # @args The arguments of the method
     # @return The original response back.
-    def get(method, *args)
+    def self.get(method, *args)
       redis.get(redis_key(method, *args))
     end
     
@@ -45,10 +45,10 @@ module Cachely
     #
     # @method [String,Symbol] The method name
     # @return [String] The proper redis key to be used in storage.
-    def redis_key(method, *args)
+    def self.redis_key(method, *args)
       {
         :method => method.to_s,
-        :args => *args.map { |param| map_param_to_s(param) }.join("|")
+        :args => args.map { |param| map_param_to_s(param) }.join("|")
       }.to_json
     end
     
@@ -57,17 +57,18 @@ module Cachely
     #
     # @s The string to convert
     # @return [Object] The respawned object
-    def map_s_to_param(s)
+    def self.map_s_to_param(s)
       begin
         respawned_hash = JSON.parse(s)
         
         if respawned_hash.is_a?(Array)
-          respawned_hash.map do |piece|
+          respawned_hash.map! do |piece|
             map_s_to_param(piece)
           end
         elsif respawned_hash.is_a?(Hash)
-          respawned_hash.each do |key, value|
-            respawned_hash[key] = map_s_to_param(value)
+          respawned_hash = respawned_hash.inject(Hash.new) do |new_hash, entry|
+            new_hash[map_s_to_param(entry[0])] = map_s_to_param(entry[1])
+            new_hash
           end
         end
         
@@ -88,7 +89,7 @@ module Cachely
     #
     # @s The string to convert
     # @return [Boolean] True if the hash is likely an ORM representation
-    def orm_signature(s)
+    def self.orm_signature(s)
       s.split(":").first=="ORM"
     end
     
@@ -96,7 +97,7 @@ module Cachely
     #
     # @s The string to convert
     # @return [ActiveRecord::Base] The respawned object
-    def map_s_to_orm(s)
+    def self.map_s_to_orm(s)
       hash = JSON.parse(s.split(":").last) #Cut off the ORM tag, so we have real JSON.
       
       Object.const_get(hash[:class]).find(:id) #load up class, get by id.
@@ -106,13 +107,17 @@ module Cachely
     #
     # @s The string to convert
     # @return The respawned object
-    def map_s_to_primitive(s)
+    def self.map_s_to_primitive(s)
       type = s.split(":").first
-      data = s.gsub(/^type:/,'')
+      data = s.gsub(/^#{type}:/,'')
       
       case type
-      when "Boolean"
-        data == "true" ? return true : return false
+      when "TrueClass"
+        return true
+      when "FalseClass"
+        return false
+      when "Symbol"
+        return data.to_sym
       when "Fixnum"
         return data.to_i
       when "Float"
@@ -121,6 +126,12 @@ module Cachely
         return data
       when "NilClass"
         return nil
+      else
+        obj = Object.const_get(type)
+        data.each do |key, value|
+          obj.send(key+"=",value)
+        end
+        return obj
       end
     end 
 
@@ -129,7 +140,7 @@ module Cachely
     #
     # @p The object to convert
     # @return [String] The redis coded string.
-    def map_param_to_s(p)
+    def self.map_param_to_s(p)
       if(p.is_a?(Hash)) 
         return map_hash_to_s(p)
       elsif(p.is_a?(Array))
@@ -137,10 +148,21 @@ module Cachely
       elsif(p.respond_to?("id") and p.respond_to?("updated_at"))
         return map_orm_object_to_s(p)
       elsif(p.respond_to?("to_json"))
-        return p.to_json #best we can do.
+        #below do extra search if string bc string puts annoying quotes in json like "\"1\""
+        #breaks the parser on the return translation.
+        translated = nil
+        if p.is_a?(String)
+          translated = p
+        elsif p.is_a?(Symbol)
+          translated = p.to_s
+        elsif p.nil?
+          translated = "nil"
+        else
+          translated = p.to_json
+        end
+          
+        return p.class.to_s + ":" + translated
       end
-      
-      return p.class.to_s + ":" + (p.nil? ? "nil" : p.to_s) #string, numbers, primitives end up here, I suspect.
     end
     
     # Maps hash to s, basically does recursive call to map_param_to_s to get everythign inside
@@ -148,9 +170,10 @@ module Cachely
     #
     # @p [Hash] Incoming hash
     # @return [String] Outgoing redis string
-    def map_hash_to_s(p)
+    def self.map_hash_to_s(p)
       p.inject(Hash.new) do |hash, entry|
-        p[entry[0].is_a?(Symbol) ? ":#{entry[0].to_s}" : entry[0]] = map_param_to_s(entry[1])
+        hash[map_param_to_s(entry[0])] = map_param_to_s(entry[1])
+        hash
       end.to_json
     end
     
@@ -158,7 +181,7 @@ module Cachely
     #
     # @p [Array] Incoming array
     # @return [String] Outgoing redis string
-    def map_array_to_s(p)  
+    def self.map_array_to_s(p)  
       p.map do |part|
         map_param_to_s(p)
       end.to_json
@@ -171,7 +194,7 @@ module Cachely
     #
     # @p [ActiveRecord::Base] ActiveRecord object
     # @return [String]
-    def map_orm_object_to_s(p)
+    def self.map_orm_object_to_s(p)
       "ORM:" + { #ORM tag makes sure this isnt reconstituted as a hash. Invalid JSON, I know.
         :class => p.class.to_s, #Need to retain case sensitivity.
         :id => p.id,
@@ -186,7 +209,7 @@ module Cachely
     # @result Anything, really.
     # @args Arguments of the method
     # @return [String] Should be "Ok" or something similar.
-    def store(method, result, *args) 
+    def self.store(method, result, *args) 
       redis.set(redis_key(method, *args), map_param_to_s(result))
     end
     
