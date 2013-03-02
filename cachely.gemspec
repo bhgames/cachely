@@ -17,4 +17,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency "redis", '~> 3.0.1'
   gem.add_dependency "hiredis", '~> 0.4.5'
   gem.add_dependency "em-synchrony"
+  gem.add_dependecy "json"
 end
