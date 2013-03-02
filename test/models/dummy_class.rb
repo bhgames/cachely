@@ -14,7 +14,7 @@ class DummyClass
   def to_json
     {
       "random_no" => self.random_no
-    }
+    }.to_json
   end
   
   def test_function_num

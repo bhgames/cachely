@@ -4,7 +4,7 @@ class ConversionsTest < BaseTest
     str = Cachely::Mechanics.map_param_to_s({:foo => "bar", :baz => { "nada" => :pink }})
     reformed = Cachely::Mechanics.map_s_to_param(str)
     assert_equal("bar", reformed[:foo])
-    assert_equal(reformed[:baz].is_a?(Hash))
+    assert(reformed[:baz].is_a?(Hash))
     internal = reformed[:baz]
     assert_equal(:pink, internal["nada"])
     assert_equal(2, reformed.keys.size)
@@ -26,11 +26,11 @@ class ConversionsTest < BaseTest
   end
   
   test "orm conversion" do
-    d = DummyModel.create!(:attr1 => rand(500), :attr2 => rand(500))
+    d = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
     str = Cachely::Mechanics.map_param_to_s(d)
     reformed = Cachely::Mechanics.map_s_to_param(str)
-    assert_equal(d.attr1, reformed.attr1)
-    assert_equal(d.attr2, reformed.attr2)
+    assert_equal(d.attr_1, reformed.attr_1)
+    assert_equal(d.attr_2, reformed.attr_2)
     assert_equal(d.id, reformed.id)
   end
   

@@ -20,6 +20,4 @@ Gem::Specification.new do |gem|
   gem.add_dependency "hiredis", '~> 0.4.5'
   gem.add_dependency "em-synchrony"
   gem.add_dependency "json"
-  gem.add_dependency 'libnotify' if /linux/ =~ RUBY_PLATFORM
-  gem.add_dependency 'growl' if /darwin/ =~ RUBY_PLATFORM
 end
