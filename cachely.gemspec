@@ -14,5 +14,5 @@ Gem::Specification.new do |gem|
   gem.name          = "cachely"
   gem.require_paths = ["lib"]
   gem.version       = Cachely::VERSION
-  gem.add_dependency "em-hiredis"
+  gem.add_dependency "unified-redis"
 end

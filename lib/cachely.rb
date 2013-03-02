@@ -1,7 +1,18 @@
 require_relative "cachely/version"
 
+require 'unified-redis'
 module Cachely
   module ClassMethods
+
+    def em_connect(url = nil)
+      @redis ||= EM.run do
+        UnifiedRedis.new(EM::Protocols::Redis.connect(url))
+      end
+    end
+
+    def connect(url = nil)
+      @redis ||= UnifiedRedis.new(Redis.new(url))
+    end
 
     def method_added(name)
       if(@cachely_fcns.include?(name) and !@cachely_fcns_added.include?(name))
