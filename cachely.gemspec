@@ -4,8 +4,8 @@ require File.expand_path('../lib/cachely/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Jordan Prince"]
   gem.email         = ["jordanmprince@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Coming soon.}
+  gem.summary       = %q{Use em-redis to transparently cache results from your class methods. Eventmachine compatible out of the box!}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
