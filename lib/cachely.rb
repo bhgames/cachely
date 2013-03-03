@@ -20,6 +20,8 @@ module Cachely
         self.class_eval("alias #{"#{name.to_s}_old".to_sym} #{name}") #alias old function out
 
         self.define_method name do |*args| #define new one
+          #result should inherently be nil of orm updated_at has changed, indicating a "new" object
+          #which would yield "new" logic we don't know about. Bc result's sig includes updated_at inside it.
           return result if result = Cachely::Mechanics.get(*args) 
           result = send("#{name.to_s}_old".to_sym, *args)
           Cachely::Mechanics.store(result)

@@ -12,7 +12,9 @@ class BaseTest < ActiveSupport::TestCase
     database_config ||= YAML.load(File.open(File.dirname(__FILE__)+'/../../config/database.yml', 'r'))
     ActiveRecord::Base.configurations = database_config
     ActiveRecord::Base.establish_connection("test")
-
+    conf =  YAML.load(File.read('./config/redis.yml'))
+    Cachely::Mechanics.connect(conf["test"])
+    Cachely::Mechanics.flush_all_keys
     DummyModel.destroy_all
   end
 end

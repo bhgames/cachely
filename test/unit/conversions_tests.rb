@@ -1,4 +1,5 @@
 require_relative 'base_test.rb'
+#Only do conversions testing here. Test recursivity.
 class ConversionsTest < BaseTest
   test "hash conversion" do
     str = Cachely::Mechanics.map_param_to_s({:foo => "bar", :baz => { "nada" => :pink }})
@@ -9,6 +10,18 @@ class ConversionsTest < BaseTest
     assert_equal(:pink, internal["nada"])
     assert_equal(2, reformed.keys.size)
     assert_equal(1, internal.keys.size)
+  end
+  
+  test "hash conversion with an array subkey" do
+    str = Cachely::Mechanics.map_param_to_s({
+      :method => :foo,
+      :args => [3,4]
+    })
+    assert_equal("{\"Symbol:method\":\"Symbol:foo\",\"Symbol:args\":\"[\\\"Fixnum:3\\\",\\\"Fixnum:4\\\"]\"}",str)
+    reformed = Cachely::Mechanics.map_s_to_param(str)
+    assert_equal(2, reformed.keys.size)
+    assert_equal(:foo, reformed[:method])
+    assert_equal(0, [3,4] <=> reformed[:args])
   end
   
   test "array conversion" do

@@ -7,11 +7,18 @@ module Cachely
     # @opt [Hash<Symbol>] 
     # @return [Boolean] success or not
     def self.connect(opts = {})
-      @redis ||= Redis.new( :driver => :hiredis,
+      @redis ||= Redis.new(
         :host => opts[:host], 
         :port => opts[:port],
         :password => opts[:password],
         :driver => opts[:driver])
+    end
+    
+    # Flush the Redis store of all keys.
+    #
+    # @return [String] success or not, normally "OK"
+    def self.flush_all_keys
+      redis.flushdb
     end
 
     # Grab current redis instance. Has ability to reconnect for you if it fails.
@@ -35,9 +42,20 @@ module Cachely
     #
     # @method [String,Symbol] the method name
     # @args The arguments of the method
-    # @return The original response back.
+    # @return The original response of the method back, whatever it may be.
     def self.get(method, *args)
-      redis.get(redis_key(method, *args))
+      map_s_to_param(redis.get(redis_key(method, *args)))
+    end
+    
+    # Stores the result in it's proper cached location on redis by getting the redis key and parsing
+    # The result into a storable string, mostly made up of recursive json.
+    #
+    # @method [Symbol] Method name
+    # @result Anything, really.
+    # @args Arguments of the method
+    # @return [String] Should be "Ok" or something similar.
+    def self.store(method, result, *args) 
+      redis.set(redis_key(method, *args), map_param_to_s(result))
     end
     
     # Converts method name and arguments into a coherent key. Creates a hash and to_jsons it
@@ -46,10 +64,10 @@ module Cachely
     # @method [String,Symbol] The method name
     # @return [String] The proper redis key to be used in storage.
     def self.redis_key(method, *args)
-      {
-        :method => method.to_s,
-        :args => args.map { |param| map_param_to_s(param) }.join("|")
-      }.to_json
+      map_param_to_s({
+        :method => method,
+        :args => args
+      })
     end
     
     # Turns any string into a parameter. Current supported types are primitives, orm models
@@ -168,16 +186,6 @@ module Cachely
       end.to_json
     end
     
-    # Stores the result in it's proper cached location on redis by getting the redis key and parsing
-    # The result into a storable string, mostly made up of recursive json.
-    #
-    # @method [Symbol] Method name
-    # @result Anything, really.
-    # @args Arguments of the method
-    # @return [String] Should be "Ok" or something similar.
-    def self.store(method, result, *args) 
-      redis.set(redis_key(method, *args), map_param_to_s(result))
-    end
-    
+
   end
 end
