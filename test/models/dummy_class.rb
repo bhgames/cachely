@@ -222,15 +222,15 @@ class DummyClass
   end
   
   def instance_to_json
-    DummyClass
+    DummyClass.new
   end
   
   def instance_to_json_one(a)
-    DummyClass
+    DummyClass.new
   end
   
   def instance_to_json_two(a,b)
-    DummyClass
+    DummyClass.new
   end
   
   def instance_hash
@@ -383,15 +383,15 @@ class DummyClass
   end
   
   def self.class_to_json
-    DummyClass
+    DummyClass.new
   end
   
   def self.class_to_json_one(a)
-    DummyClass
+    DummyClass.new
   end
   
   def self.class_to_json_two(a,b)
-    DummyClass
+    DummyClass.new
   end
   
   def self.class_hash

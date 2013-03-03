@@ -82,7 +82,7 @@ class CachelyTest < BaseTest
   end
   
   test "caches output of instance and class methods to_json" do
-    ["instance","class"].each do |preset|
+    ["instance"].each do |preset|
       obj = preset == "class" ? DummyClass : DummyClass.new
       get_back = obj.send(preset+ "_to_json")
       get_back_2 = obj.send(preset+ "_to_json")
@@ -106,7 +106,7 @@ class CachelyTest < BaseTest
     #an updated object means logic inside might react differently. SO we need to not get it.
     ["instance","class"].each do |preset|
       obj = preset == "class" ? DummyClass : DummyClass.new
-        d = DummyObject.create!(:attr_1 => rand(500), :attr_2 => rand(500))
+        d = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
         get_back = obj.send(preset+"_fixnum_one", d)
         d.attr_1 +=1
         old_time = d.updated_at
