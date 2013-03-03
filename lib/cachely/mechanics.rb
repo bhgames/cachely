@@ -38,13 +38,37 @@ module Cachely
       return @redis  
     end
     
+    # Defines the method using my hacky eval script. So far, this is the only way I've found that
+    # allows me to define variable argument length definitions. If you have a better idea, please
+    # refactor it!
+    #
+    # @name [Symbol] fcn name
+    # @return nil
+    def self.setup_method(klazz, name, is_class_method = false) 
+      context = (is_class_method ? klazz : klazz.new)
+      args_str = context.method("#{name.to_s}_old".to_sym).parameters.map { |k| k.last}.join(',')
+      args_to_use_in_def = args_str.empty? ? "" : "," + args_str
+      eval("klazz.define_#{is_class_method ? "singleton_" : ""}method(:#{name}) do #{args_str.empty? ? "" : "|#{args_str}|"}; " +
+        "result = Cachely::Mechanics.get(:#{name}#{args_to_use_in_def});" +
+        "return result.first if result.is_a?(Array);" + 
+        "result = context.send(:#{"#{name.to_s}_old"}#{args_to_use_in_def});" + 
+        "Cachely::Mechanics.store(:#{"#{name.to_s}"}, result#{args_to_use_in_def});" +
+        "return result;" + 
+        "end"
+      )
+    end
+    
     # Gets a cached response to a method.
     #
     # @method [String,Symbol] the method name
     # @args The arguments of the method
     # @return The original response of the method back, whatever it may be.
     def self.get(method, *args)
-      map_s_to_param(redis.get(redis_key(method, *args)))
+      result = redis.get(redis_key(method, *args))
+      #return an array, bc if the result stored was nil, it looks the same as if
+      #we got no result back(which we would return nil) so we differentiate by putting
+      #our return value always in an array. Easy to check.
+      result.nil? ? nil : [map_s_to_param(result)]
     end
     
     # Stores the result in it's proper cached location on redis by getting the redis key and parsing
