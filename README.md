@@ -56,7 +56,7 @@ use
 
 		cachely :foo, time_to_expiry: 3.minutes
 		
-If you have a class method of the same name as an instance variable,
+If you have a class method of the same name as an instance method,
 
 		cachely :foo
 		
