@@ -2,98 +2,133 @@ class DummyClass
   include Cachely
   attr_accessor :random_no
   
-  cachely :instance_fixnum, time: 3.minutes
-  cachely :instance_fixnum_one, time: 3.minutes
-  cachely :instance_fixnum_two, time: 3.minutes
+  cachely :cache_expiry, time_to_expiry: 1.seconds
   
-  cachely :instance_float, time: 3.minutes
-  cachely :instance_float_one, time: 3.minutes
-  cachely :instance_float_two, time: 3.minutes
+  cachely :class_diff, time_to_expiry: 3.minutes
   
-  cachely :instance_string, time: 3.minutes
-  cachely :instance_string_one, time: 3.minutes
-  cachely :instance_string_two, time: 3.minutes
+  cachely :instance_only_cache, time_to_expiry: 3.minutes, type: "instance"
+  cachely :class_only_cache, time_to_expiry: 3.minutes, type: "class"
   
-  cachely :instance_symbol, time: 3.minutes
-  cachely :instance_symbol_one, time: 3.minutes
-  cachely :instance_symbol_two, time: 3.minutes
+  cachely :instance_fixnum, time_to_expiry: 3.minutes
+  cachely :instance_fixnum_one, time_to_expiry: 3.minutes
+  cachely :instance_fixnum_two, time_to_expiry: 3.minutes
   
-  cachely :instance_nilclass, time: 3.minutes
-  cachely :instance_nilclass_one, time: 3.minutes
-  cachely :instance_nilclass_two, time: 3.minutes
+  cachely :instance_float, time_to_expiry: 3.minutes
+  cachely :instance_float_one, time_to_expiry: 3.minutes
+  cachely :instance_float_two, time_to_expiry: 3.minutes
   
-  cachely :instance_falseclass, time: 3.minutes
-  cachely :instance_falseclass_one, time: 3.minutes
-  cachely :instance_falseclass_two, time: 3.minutes
+  cachely :instance_string, time_to_expiry: 3.minutes
+  cachely :instance_string_one, time_to_expiry: 3.minutes
+  cachely :instance_string_two, time_to_expiry: 3.minutes
   
-  cachely :instance_trueclass, time: 3.minutes
-  cachely :instance_trueclass_one, time: 3.minutes
-  cachely :instance_trueclass_two, time: 3.minutes
+  cachely :instance_symbol, time_to_expiry: 3.minutes
+  cachely :instance_symbol_one, time_to_expiry: 3.minutes
+  cachely :instance_symbol_two, time_to_expiry: 3.minutes
   
-  cachely :instance_orm, time: 3.minutes
-  cachely :instance_orm_one, time: 3.minutes
-  cachely :instance_orm_two, time: 3.minutes
+  cachely :instance_nilclass, time_to_expiry: 3.minutes
+  cachely :instance_nilclass_one, time_to_expiry: 3.minutes
+  cachely :instance_nilclass_two, time_to_expiry: 3.minutes
   
-  cachely :instance_array, time: 3.minutes
-  cachely :instance_array_one, time: 3.minutes
-  cachely :instance_array_two, time: 3.minutes
+  cachely :instance_falseclass, time_to_expiry: 3.minutes
+  cachely :instance_falseclass_one, time_to_expiry: 3.minutes
+  cachely :instance_falseclass_two, time_to_expiry: 3.minutes
   
-  cachely :instance_hash, time: 3.minutes
-  cachely :instance_hash_one, time: 3.minutes
-  cachely :instance_hash_two, time: 3.minutes
+  cachely :instance_trueclass, time_to_expiry: 3.minutes
+  cachely :instance_trueclass_one, time_to_expiry: 3.minutes
+  cachely :instance_trueclass_two, time_to_expiry: 3.minutes
   
-  cachely :instance_to_json, time: 3.minutes
-  cachely :instance_to_json_one, time: 3.minutes
-  cachely :instance_to_json_two, time: 3.minutes
+  cachely :instance_orm, time_to_expiry: 3.minutes
+  cachely :instance_orm_one, time_to_expiry: 3.minutes
+  cachely :instance_orm_two, time_to_expiry: 3.minutes
   
-  cachely :class_fixnum, time: 3.minutes, :class_method => true
-  cachely :class_fixnum_one, time: 3.minutes, :class_method => true
-  cachely :class_fixnum_two, time: 3.minutes, :class_method => true
+  cachely :instance_array, time_to_expiry: 3.minutes
+  cachely :instance_array_one, time_to_expiry: 3.minutes
+  cachely :instance_array_two, time_to_expiry: 3.minutes
   
-  cachely :class_float, time: 3.minutes, :class_method => true
-  cachely :class_float_one, time: 3.minutes, :class_method => true
-  cachely :class_float_two, time: 3.minutes, :class_method => true
+  cachely :instance_hash, time_to_expiry: 3.minutes
+  cachely :instance_hash_one, time_to_expiry: 3.minutes
+  cachely :instance_hash_two, time_to_expiry: 3.minutes
   
-  cachely :class_string, time: 3.minutes, :class_method => true
-  cachely :class_string_one, time: 3.minutes, :class_method => true
-  cachely :class_string_two, time: 3.minutes, :class_method => true
+  cachely :instance_to_json, time_to_expiry: 3.minutes
+  cachely :instance_to_json_one, time_to_expiry: 3.minutes
+  cachely :instance_to_json_two, time_to_expiry: 3.minutes
   
-  cachely :class_symbol, time: 3.minutes, :class_method => true
-  cachely :class_symbol_one, time: 3.minutes, :class_method => true
-  cachely :class_symbol_two, time: 3.minutes, :class_method => true
+  cachely :class_fixnum, time_to_expiry: 3.minutes
+  cachely :class_fixnum_one, time_to_expiry: 3.minutes
+  cachely :class_fixnum_two, time_to_expiry: 3.minutes
   
-  cachely :class_nilclass, time: 3.minutes, :class_method => true
-  cachely :class_nilclass_one, time: 3.minutes, :class_method => true
-  cachely :class_nilclass_two, time: 3.minutes, :class_method => true
+  cachely :class_float, time_to_expiry: 3.minutes
+  cachely :class_float_one, time_to_expiry: 3.minutes
+  cachely :class_float_two, time_to_expiry: 3.minutes
   
-  cachely :class_falseclass, time: 3.minutes, :class_method => true
-  cachely :class_falseclass_one, time: 3.minutes, :class_method => true
-  cachely :class_falseclass_two, time: 3.minutes, :class_method => true
+  cachely :class_string, time_to_expiry: 3.minutes
+  cachely :class_string_one, time_to_expiry: 3.minutes
+  cachely :class_string_two, time_to_expiry: 3.minutes
   
-  cachely :class_trueclass, time: 3.minutes, :class_method => true
-  cachely :class_trueclass_one, time: 3.minutes, :class_method => true
-  cachely :class_trueclass_two, time: 3.minutes, :class_method => true
+  cachely :class_symbol, time_to_expiry: 3.minutes
+  cachely :class_symbol_one, time_to_expiry: 3.minutes
+  cachely :class_symbol_two, time_to_expiry: 3.minutes
   
-  cachely :class_orm, time: 3.minutes, :class_method => true
-  cachely :class_orm_one, time: 3.minutes, :class_method => true
-  cachely :class_orm_two, time: 3.minutes, :class_method => true
+  cachely :class_nilclass, time_to_expiry: 3.minutes
+  cachely :class_nilclass_one, time_to_expiry: 3.minutes
+  cachely :class_nilclass_two, time_to_expiry: 3.minutes
   
-  cachely :class_array, time: 3.minutes, :class_method => true
-  cachely :class_array_one, time: 3.minutes, :class_method => true
-  cachely :class_array_two, time: 3.minutes, :class_method => true
+  cachely :class_falseclass, time_to_expiry: 3.minutes
+  cachely :class_falseclass_one, time_to_expiry: 3.minutes
+  cachely :class_falseclass_two, time_to_expiry: 3.minutes
   
-  cachely :class_hash, time: 3.minutes, :class_method => true
-  cachely :class_hash_one, time: 3.minutes, :class_method => true
-  cachely :class_hash_two, time: 3.minutes, :class_method => true
+  cachely :class_trueclass, time_to_expiry: 3.minutes
+  cachely :class_trueclass_one, time_to_expiry: 3.minutes
+  cachely :class_trueclass_two, time_to_expiry: 3.minutes
   
-  cachely :class_to_json, time: 3.minutes, :class_method => true
-  cachely :class_to_json_one, time: 3.minutes, :class_method => true
-  cachely :class_to_json_two, time: 3.minutes, :class_method => true
+  cachely :class_orm, time_to_expiry: 3.minutes
+  cachely :class_orm_one, time_to_expiry: 3.minutes
+  cachely :class_orm_two, time_to_expiry: 3.minutes
+  
+  cachely :class_array, time_to_expiry: 3.minutes
+  cachely :class_array_one, time_to_expiry: 3.minutes
+  cachely :class_array_two, time_to_expiry: 3.minutes
+  
+  cachely :class_hash, time_to_expiry: 3.minutes
+  cachely :class_hash_one, time_to_expiry: 3.minutes
+  cachely :class_hash_two, time_to_expiry: 3.minutes
+  
+  cachely :class_to_json, time_to_expiry: 3.minutes
+  cachely :class_to_json_one, time_to_expiry: 3.minutes
+  cachely :class_to_json_two, time_to_expiry: 3.minutes
   
   def to_json
     {
       "random_no" => self.random_no
     }.to_json
+  end
+  
+  def instance_only_cache
+    rand(500)
+  end
+  
+  def self.instance_only_cache
+    rand(500)
+  end
+  
+  def class_only_cache
+    rand(500)
+  end
+  
+  def self.class_only_cache
+    rand(500)
+  end
+  
+  def self.class_diff
+    rand(500)
+  end
+  
+  def class_diff
+    rand(500)
+  end
+  
+  def cache_expiry
+    rand(500)
   end
   
   def instance_fixnum

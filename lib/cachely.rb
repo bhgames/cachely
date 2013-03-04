@@ -13,11 +13,11 @@ module Cachely
     # @name [Symbol] fcn name
     # @return nil
     def singleton_method_added(name)
-      if(@cachely_fcns and @cachely_fcns.include?(name) and !@cachely_fcns_added.include?(name))
-        @cachely_fcns_added << name #this method'll get called when we do define method below
-          #this halts that.
-        self.instance_eval("alias :#{"#{name.to_s}_old".to_sym} :#{name}")
-        Cachely::Mechanics.setup_method(self,name, true)
+      if(@cachely_fcns and @cachely_fcns.include?(name) and !self.respond_to?("#{name.to_s}_old".to_sym))
+        unless(@cachely_opts[name][:type] and @cachely_opts[name][:type] == "instance")
+          self.instance_eval("alias :#{"#{name.to_s}_old".to_sym} :#{name}")
+          Cachely::Mechanics.setup_method(self,name, @cachely_opts[name][:time_to_expiry], true)
+        end
       end
       super
     end
@@ -28,11 +28,12 @@ module Cachely
     # @name [Symbol] fcn name
     # @return nil
     def method_added(name)
-      if(@cachely_fcns and @cachely_fcns.include?(name) and !@cachely_fcns_added.include?(name))
-        @cachely_fcns_added << name #this method'll get called when we do define method below
-        #this halts that.
-        self.class_eval("alias :#{"#{name.to_s}_old".to_sym} :#{name}") #alias old function out
-        Cachely::Mechanics.setup_method(self,name)
+      if(@cachely_fcns and @cachely_fcns.include?(name) and !self.new.respond_to?("#{name.to_s}_old".to_sym))
+        # only do this if we either haven't explicitly labeled fcn type, or it's not class.
+        unless(@cachely_opts[name][:type] and @cachely_opts[name][:type] == "class")
+          self.class_eval("alias :#{"#{name.to_s}_old".to_sym} :#{name}") #alias old function out
+          Cachely::Mechanics.setup_method(self,name, @cachely_opts[name][:time_to_expiry])
+        end
       end
       super
     end
@@ -44,10 +45,11 @@ module Cachely
     # @extension No idea
     # @return [Array] Array of current fcns to be added.
     def cachely(fcn, opts = {}, &extension)
-      @cachely_fcns_added ||= []
       @cachely_fcns ||= []
+      @cachely_opts ||= {}
+      
       @cachely_fcns << fcn
-      #method_added(fcn) if(opts[:class_method]) #class methods already defined, need to call manually.
+      @cachely_opts[fcn] = opts
     end
   end
 

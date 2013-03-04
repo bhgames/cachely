@@ -118,4 +118,29 @@ class CachelyTest < BaseTest
     end
   end
   
+  test "instance method called on two diff objects knows its different" do
+    obj_1 = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
+    obj_2 = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
+    assert_not_equal(obj_1.instance_fixnum, obj_2.instance_fixnum)
+  end
+  
+  test "class method gets cached while normal one does not" do
+    obj = DummyClass.new
+    klazz = DummyClass
+    assert_not_equal(obj.instance_only_cache, klazz.instance_only_cache)
+  end
+  
+  test "diff between class and obj method" do
+    obj = DummyClass.new
+    klazz = DummyClass
+    assert_not_equal(obj.class_diff, klazz.class_diff)
+  end
+  
+  test "cache expires" do
+    obj = DummyClass.new
+    old = obj.cache_expiry
+    sleep(3)
+    assert_not_equal(old, obj.cache_expiry)
+  end
+  
 end
