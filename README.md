@@ -69,7 +69,10 @@ keyed locations, of course. To specify instance or class method, do
 Cachely is able to figure out whether or not to use the cache by looking at the arguments you pass in.
 Generally, if your arguments are the same, and the object you're calling the method on is the same(Cachely uses 
 the to_json method on the object you call the method on to determine this), then it assumes the result
-will be the same and uses the cached result. 
+will be the same and uses the cached result.
+
+Cachely expects that any objects you return or pass in to methods as arguments have to_json methods. Without
+this, it won't work. 
 
 CAVEAT: Do NOT use Cachely for functions that depend on time of day or random numbers, as these are inherently uncachable. 
 If you check the tests out, you'll see random number functions are used exhaustively to test the caching ability of cachely,
