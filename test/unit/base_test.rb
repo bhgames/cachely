@@ -5,7 +5,9 @@ require 'yaml'
 base_dir = File.expand_path(File.join(File.dirname(__FILE__), "../.."))
 require base_dir + "/lib/cachely.rb"
 require_relative '../models/dummy_model.rb'
+require_relative '../models/dummy_model_two.rb'
 require_relative '../models/dummy_class.rb'
+require_relative '../models/dummy_class_2.rb'
 
 class BaseTest < ActiveSupport::TestCase
   def setup

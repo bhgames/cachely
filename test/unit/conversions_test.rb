@@ -37,6 +37,56 @@ class ConversionsTest < BaseTest
     assert_equal(d.random_no, reformed.random_no)
   end
 
+  test "orm class" do
+    assert_nothing_raised(Exception) do
+      Cachely::Mechanics.map_param_to_s(DummyModel)
+    end
+  end
+
+  test "orm obj referencing itself" do
+    d = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
+
+    d.dummy_model = d
+    d.save!
+    assert_nothing_raised(Exception) do
+      Cachely::Mechanics.map_param_to_s(d)
+    end
+  end
+
+  test "orm obj referencing another orm" do
+    d = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))    
+    d2 = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
+
+    d.dummy_model = d2
+    d.save!
+    assert_nothing_raised(Exception) do
+      Cachely::Mechanics.map_param_to_s(d)
+    end
+  end
+
+  test "to_json obj referencing itself" do
+    d = DummyClass2.new
+    assert_nothing_raised(Exception) do
+      Cachely::Mechanics.map_param_to_s(d)
+    end
+  end
+
+  test "array obj referencing itself" do
+    arr=[]
+    arr<<arr
+    assert_nothing_raised(Exception) do
+      Cachely::Mechanics.map_param_to_s(arr)
+    end
+  end
+
+  test "hash obj referencing itself" do
+    hash = {}
+    hash[:hash] = hash
+    assert_nothing_raised(Exception) do
+      Cachely::Mechanics.map_param_to_s(hash)
+    end
+  end
+
   test "class conversion" do
     str = Cachely::Mechanics.map_param_to_s(DummyClass)
     reformed = Cachely::Mechanics.map_s_to_param(str)

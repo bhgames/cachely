@@ -85,11 +85,27 @@ Want to wipe all keys?
 
 And done.
 
-CAVEAT: Do NOT use Cachely for functions that depend on time of day or random numbers, as these are inherently uncachable. 
+## Caveats
+
+CAVEAT 1: Do NOT use Cachely for functions that depend on time of day or random numbers, as these are inherently uncachable. 
 If you check the tests out, you'll see random number functions are used exhaustively to test the caching ability of cachely,
 because we know the function wasn't called if the second call yields the same number.
 
 If you do not understand the implications of the caveat, do not use cachely. You're not ready yet. 
+
+CAVEAT 2: Do NOT use Cachely on a method that you pass arguments with circular references to themselves, ie 
+
+    hash = {}
+    hash[:hash] = hash
+    hash.to_json #will throw an error, to_json is used exhaustively by cachely to handle caching properly.
+
+This also includes method results - if you ever return a result that has circular references, don't use cachely. If the object or class you're calling the method on
+has circular references to itself, don't use cachely then, either.
+
+One exception is ActiveRecord objects, which have already been fixed in this regard. There are three tests in conversion_tests.rb that fail still that deal with this
+caveat. I'll be fixing them in the future and we'll be one caveat shorter.
+
+  
 ## Installation
 
 Add this line to your application's Gemfile:

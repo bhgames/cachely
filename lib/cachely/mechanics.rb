@@ -189,6 +189,7 @@ module Cachely
     # @p The object to convert
     # @return [String] The redis coded string.
     def self.map_param_to_s(p)
+
       if(p.is_a?(Hash)) 
         return map_hash_to_s(p)
       elsif(p.is_a?(Array))
@@ -214,10 +215,17 @@ module Cachely
           #don't want { "dummy_model" = > {:attributes => 1}}
           #want {:attributes => 1}
           translated = "instance|#{p.class.to_s}|#{JSON.parse(p.to_json)[p.class.to_s.underscore].to_json}"
-        else 
-          translated = (p.to_s.match(/^#</) ? "instance|#{p.class}" : "class|#{p.to_s}") + "|"+ p.to_json
+        else
+          my_json = nil
+          begin
+            my_json = p.to_json #active record classes have circ references, we catch them below.
+          rescue ActiveSupport::JSON::Encoding::CircularReferenceError => e
+            my_json = "{}"
+          end
+
+          translated = (p.to_s.match(/^#</) ? "instance|#{p.class}" : "class|#{p.to_s}") + "|"+ my_json
         end
-        
+
         return translated
       end
     end
