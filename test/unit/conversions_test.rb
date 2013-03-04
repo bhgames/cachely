@@ -110,6 +110,9 @@ class ConversionsTest < BaseTest
     assert_equal("instance|String|1", Cachely::Mechanics.map_param_to_s("1"))   
     assert_equal("instance|NilClass|nil", Cachely::Mechanics.map_param_to_s(nil))    
     assert_equal("instance|Symbol|shit", Cachely::Mechanics.map_param_to_s(:shit))    
+    assert_equal("instance|Time|2013-03-04 16:16:14 -0600", Cachely::Mechanics.map_param_to_s(Time.new(2013,03,04,16,16,14)))    
+    assert_equal("instance|DateTime|2013-03-04T16:16:14-06:00", Cachely::Mechanics.map_param_to_s(DateTime.parse("2013-03-04T16:16:14-0600")))    
+    assert_equal("instance|Date|2013-03-04", Cachely::Mechanics.map_param_to_s(Date.new(2013,03,04)))    
     assert_equal(true, Cachely::Mechanics.map_s_to_param("instance|TrueClass|true"))
     assert_equal(false, Cachely::Mechanics.map_s_to_param("instance|FalseClass|false"))
     assert_equal(1, Cachely::Mechanics.map_s_to_param("instance|Fixnum|1"))
@@ -118,6 +121,9 @@ class ConversionsTest < BaseTest
     assert_equal("1|2", Cachely::Mechanics.map_s_to_param("instance|String|1|2"))
     assert_equal(:shit, Cachely::Mechanics.map_s_to_param("instance|Symbol|shit"))
     assert_equal(nil, Cachely::Mechanics.map_s_to_param("instance|NilClass|nil"))
-    
+    assert_equal(Time.new(2013,03,04,16,16,14), Cachely::Mechanics.map_s_to_param("instance|Time|2013-03-04 16:16:14 -0600"))    
+    assert_equal(DateTime.parse("2013-03-04T16:16:14-0600"), Cachely::Mechanics.map_s_to_param("instance|DateTime|2013-03-04T16:16:14-06:00"))    
+    assert_equal(Date.new(2013,03,04), Cachely::Mechanics.map_s_to_param("instance|Date|2013-03-04"))    
+   
   end
 end

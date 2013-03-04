@@ -2,7 +2,13 @@ require_relative 'base_test.rb'
 #This test level is for functionality that occurs at the cachely.rb level. Things that interact
 #With the model.
 class CachelyTest < BaseTest
-  #later test: having defaults in parameters.
+
+  test "caches output of methods in orm object" do
+    d = DummyModelTwo.create!(:attr_1 => rand(500)) 
+    assert_equal(d.i_random, d.i_random)
+    assert_equal(DummyModelTwo.random, DummyModelTwo.random)
+  end
+
   test "caches output of instance and class methods primitive" do
     ["instance","class"].each do |preset|
       [

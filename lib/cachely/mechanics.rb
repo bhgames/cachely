@@ -49,7 +49,7 @@ module Cachely
       args_str = context.method("#{name.to_s}_old".to_sym).parameters.map { |k| k.last}.join(',')
       args_to_use_in_def = args_str.empty? ? "" : "," + args_str
       time_exp_str = time_to_expire_in_s.nil? ? ",nil" : ",time_to_expire_in_s"
-      eval("klazz.define_#{is_class_method ? "singleton_" : ""}method(:#{name}) do #{args_str.empty? ? "" : "|#{args_str}|"}; " +
+      to_def = ("klazz.define_#{is_class_method ? "singleton_" : ""}method(:#{name}) do #{args_str.empty? ? "" : "|#{args_str}|"}; " +
         "result = Cachely::Mechanics.get(context,:#{name}#{time_exp_str}#{args_to_use_in_def});" +
         "return result.first if result.is_a?(Array);" + 
         "result = context.send(:#{"#{name.to_s}_old"}#{args_to_use_in_def});" + 
@@ -57,6 +57,8 @@ module Cachely
         "return result;" + 
         "end"
       )
+      binding.pry
+      eval(to_def)
     end
  
     # Force-expires a result to a method with this signature given by obj, method, args.
@@ -64,12 +66,12 @@ module Cachely
     # @obj [Object] the object you're calling method on
     # @method [String,Symbol] the method name
     # @args The arguments of the method
-    # @return The original response of the method back, whatever it may be.
+    # @return The original response of the method back, whatever it may be, or nil.
     def self.expire(obj, method, *args)
       key = redis_key(obj, method, *args)
       result = get(obj,method,1,*args)
       redis.del(key)
-      return result
+      result.nil? ? nil : result.first
     end   
 
     # Gets a cached response to a method.
@@ -83,6 +85,7 @@ module Cachely
       key = redis_key(obj, method, *args)
       result = redis.get(key)
       if result
+        p "retyurning #{key}"
         redis.expire(key, time_to_exp_in_s) if time_to_exp_in_s #reset the expiry
         #return an array, bc if the result stored was nil, it looks the same as if
         #we got no result back(which we would return nil) so we differentiate by putting
@@ -172,6 +175,12 @@ module Cachely
         return data
       when "NilClass"
         return nil
+      when "Time"
+        return DateTime.parse(data).to_time
+      when "DateTime"
+        return DateTime.parse(data)
+      when "Date"
+        return DateTime.parse(data).to_date
       else
         class_or_instance == "instance" ? obj = Object.const_get(type).new : obj = Object.const_get(type)
 
@@ -211,6 +220,12 @@ module Cachely
           translated = "instance|Fixnum|" + p.to_s
         elsif p.is_a?(Float)
           translated = "instance|Float|" + p.to_s
+        elsif p.is_a?(Time)
+          translated = "instance|Time|" + p.to_s
+        elsif p.is_a?(DateTime)
+          translated = "instance|DateTime|" + p.to_s
+        elsif p.is_a?(Date)
+          translated = "instance|Date|" + p.to_s
         elsif p.is_a?(ActiveRecord::Base)
           #don't want { "dummy_model" = > {:attributes => 1}}
           #want {:attributes => 1}
@@ -222,7 +237,6 @@ module Cachely
           rescue ActiveSupport::JSON::Encoding::CircularReferenceError => e
             my_json = "{}"
           end
-
           translated = (p.to_s.match(/^#</) ? "instance|#{p.class}" : "class|#{p.to_s}") + "|"+ my_json
         end
 
