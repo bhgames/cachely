@@ -17,7 +17,6 @@ class ConversionsTest < BaseTest
       :method => :foo,
       :args => [3,4]
     })
-    assert_equal("{\"Symbol:method\":\"Symbol:foo\",\"Symbol:args\":\"[\\\"Fixnum:3\\\",\\\"Fixnum:4\\\"]\"}",str)
     reformed = Cachely::Mechanics.map_s_to_param(str)
     assert_equal(2, reformed.keys.size)
     assert_equal(:foo, reformed[:method])
@@ -37,6 +36,12 @@ class ConversionsTest < BaseTest
     reformed = Cachely::Mechanics.map_s_to_param(str)
     assert_equal(d.random_no, reformed.random_no)
   end
+
+  test "class conversion" do
+    str = Cachely::Mechanics.map_param_to_s(DummyClass)
+    reformed = Cachely::Mechanics.map_s_to_param(str)
+    assert_equal(reformed, DummyClass)
+  end
   
   test "orm conversion" do
     d = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
@@ -48,21 +53,21 @@ class ConversionsTest < BaseTest
   end
   
   test "primitives conversion" do
-    assert_equal("TrueClass:true", Cachely::Mechanics.map_param_to_s(true))
-    assert_equal("FalseClass:false", Cachely::Mechanics.map_param_to_s(false))
-    assert_equal("Fixnum:1", Cachely::Mechanics.map_param_to_s(1))
-    assert_equal("Float:1.1", Cachely::Mechanics.map_param_to_s(1.1))
-    assert_equal("String:1", Cachely::Mechanics.map_param_to_s("1"))   
-    assert_equal("NilClass:nil", Cachely::Mechanics.map_param_to_s(nil))    
-    assert_equal("Symbol:shit", Cachely::Mechanics.map_param_to_s(:shit))    
-    assert_equal(true, Cachely::Mechanics.map_s_to_param("TrueClass:true"))
-    assert_equal(false, Cachely::Mechanics.map_s_to_param("FalseClass:false"))
-    assert_equal(1, Cachely::Mechanics.map_s_to_param("Fixnum:1"))
-    assert_equal(1.1, Cachely::Mechanics.map_s_to_param("Float:1.1"))
-    assert_equal("1", Cachely::Mechanics.map_s_to_param("String:1"))
-    assert_equal("1:2", Cachely::Mechanics.map_s_to_param("String:1:2"))
-    assert_equal(:shit, Cachely::Mechanics.map_s_to_param("Symbol:shit"))
-    assert_equal(nil, Cachely::Mechanics.map_s_to_param("NilClass:nil"))
+    assert_equal("instance|TrueClass|true", Cachely::Mechanics.map_param_to_s(true))
+    assert_equal("instance|FalseClass|false", Cachely::Mechanics.map_param_to_s(false))
+    assert_equal("instance|Fixnum|1", Cachely::Mechanics.map_param_to_s(1))
+    assert_equal("instance|Float|1.1", Cachely::Mechanics.map_param_to_s(1.1))
+    assert_equal("instance|String|1", Cachely::Mechanics.map_param_to_s("1"))   
+    assert_equal("instance|NilClass|nil", Cachely::Mechanics.map_param_to_s(nil))    
+    assert_equal("instance|Symbol|shit", Cachely::Mechanics.map_param_to_s(:shit))    
+    assert_equal(true, Cachely::Mechanics.map_s_to_param("instance|TrueClass|true"))
+    assert_equal(false, Cachely::Mechanics.map_s_to_param("instance|FalseClass|false"))
+    assert_equal(1, Cachely::Mechanics.map_s_to_param("instance|Fixnum|1"))
+    assert_equal(1.1, Cachely::Mechanics.map_s_to_param("instance|Float|1.1"))
+    assert_equal("1", Cachely::Mechanics.map_s_to_param("instance|String|1"))
+    assert_equal("1|2", Cachely::Mechanics.map_s_to_param("instance|String|1|2"))
+    assert_equal(:shit, Cachely::Mechanics.map_s_to_param("instance|Symbol|shit"))
+    assert_equal(nil, Cachely::Mechanics.map_s_to_param("instance|NilClass|nil"))
     
   end
 end

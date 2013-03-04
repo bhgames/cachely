@@ -86,12 +86,11 @@ module Cachely
     # Converts method name and arguments into a coherent key. Creates a hash and to_jsons it
     # And that becomes the redis key. Spiffy, I know.
     #
-    # @method [String,Symbol] The method name
+    # @method [Object, Symbol, Args] The context, method name symbol, and args.
     # @return [String] The proper redis key to be used in storage.
-    def self.redis_key(obj, method, *args)
+    def self.redis_key(context, method, *args)
       map_param_to_s({
-        :obj => obj.to_s.match(/^#</) ? "instance:#{obj.class}" : obj.to_s,
-        :attributes => obj.to_json, #Best way to identify objects is to just to_json them.
+        :context => context,
         :method => method,
         :args => args
       })
@@ -132,9 +131,10 @@ module Cachely
     # @s The string to convert
     # @return The respawned object
     def self.map_s_to_obj(s)
-      type = s.split(":").first
-      data = s.gsub(/^#{type}:/,'')
-      
+      class_or_instance = s.split("|").first
+      type = s.split("|")[1]
+      data = s.gsub(/^#{class_or_instance}\|#{type}\|/,'')
+
       case type
       when "TrueClass"
         return true
@@ -151,10 +151,12 @@ module Cachely
       when "NilClass"
         return nil
       else
-        obj = Object.const_get(type).new
+        class_or_instance == "instance" ? obj = Object.const_get(type).new : obj = Object.const_get(type)
+
         JSON.parse(data).each do |key, value|
-          obj.send(key+"=",value)
+          obj.send(key+"=",value) if obj.respond_to?(key+"=")
         end
+
         return obj
       end
     end 
@@ -170,24 +172,31 @@ module Cachely
       elsif(p.is_a?(Array))
         return map_array_to_s(p)
       elsif(p.respond_to?("to_json"))
-        #below do extra search if string bc string puts annoying quotes in json like "\"1\""
-        #breaks the parser on the return translation.
         translated = nil
+
         if p.is_a?(String)
-          translated = p
+          translated = "instance|"+p.class.to_s+"|"+p
         elsif p.is_a?(Symbol)
-          translated = p.to_s
+          translated = "instance|"+p.class.to_s+"|"+p.to_s
         elsif p.nil?
-          translated = "nil"
+          translated = "instance|NilClass|nil"
+        elsif p.is_a?(TrueClass)
+          translated = "instance|TrueClass|true"
+        elsif p.is_a?(FalseClass)
+          translated = "instance|FalseClass|false"
+        elsif p.is_a?(Fixnum)
+          translated = "instance|Fixnum|" + p.to_s
+        elsif p.is_a?(Float)
+          translated = "instance|Float|" + p.to_s
         elsif p.is_a?(ActiveRecord::Base)
           #don't want { "dummy_model" = > {:attributes => 1}}
           #want {:attributes => 1}
-          translated = JSON.parse(p.to_json)[p.class.to_s.underscore].to_json
-        else
-          translated = p.to_json
+          translated = "instance|#{p.class.to_s}|#{JSON.parse(p.to_json)[p.class.to_s.underscore].to_json}"
+        else 
+          translated = (p.to_s.match(/^#</) ? "instance|#{p.class}" : "class|#{p.to_s}") + "|"+ p.to_json
         end
         
-        return p.class.to_s + ":" + translated
+        return translated
       end
     end
     

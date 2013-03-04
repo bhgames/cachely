@@ -135,7 +135,7 @@ class CachelyTest < BaseTest
     klazz = DummyClass
     assert_not_equal(obj.class_diff, klazz.class_diff)
   end
-  
+ 
   test "cache expires" do
     obj = DummyClass.new
     old = obj.cache_expiry
