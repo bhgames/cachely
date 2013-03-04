@@ -10,7 +10,7 @@ Transparent method level caching using redis. Event machine optional.
 			cachely :foo
 			
 			def foo
-				sleep(10)
+				sleep(10) #Simulate blocking with a 10s sleep. Could be an ARModel.all command? An API call?
 				return rand(500) #Holy moly, what a HUGE, LONG CALL! Returns a different value every time.
 			end
 		
