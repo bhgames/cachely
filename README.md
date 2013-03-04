@@ -79,6 +79,12 @@ the method name, and it's arguments. To expire a cached result by this signature
 
     Cachely::Mechanics.expire(object, method, *args)
 
+Want to wipe all keys?
+
+    Cachely::Mechanics.flush_all_keys
+
+And done.
+
 CAVEAT: Do NOT use Cachely for functions that depend on time of day or random numbers, as these are inherently uncachable. 
 If you check the tests out, you'll see random number functions are used exhaustively to test the caching ability of cachely,
 because we know the function wasn't called if the second call yields the same number.
