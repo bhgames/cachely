@@ -142,5 +142,17 @@ class CachelyTest < BaseTest
     sleep(3)
     assert_not_equal(old, obj.cache_expiry)
   end
+ 
+  test "cache with 3 s expiry doesnt expire in 3 s if we keep hitting it" do
+    obj = DummyClass.new
+    old = obj.cache_expiry_3
+    5.times do #should still be present on fourth and fifth times
+      sleep(1)
+      assert_equal(old, obj.cache_expiry_3)
+    end
   
+    sleep(4)
+    assert_not_equal(old, obj.cache_expiry_3)
+  end
+
 end

@@ -64,8 +64,8 @@ will still work, it will cache both the instance method foo and the class method
 keyed locations, of course. To specify instance or class method, do
 
 		cachely :foo, :type => "instance"
-		cachely :foo, :type => "class"
-		
+		cachely :foo, :type => "class"	
+
 Cachely is able to figure out whether or not to use the cache by looking at the arguments you pass in.
 Generally, if your arguments are the same, and the object you're calling the method on is the same(Cachely uses 
 the to_json method on the object you call the method on to determine this), then it assumes the result
@@ -73,6 +73,11 @@ will be the same and uses the cached result.
 
 Cachely expects that any objects you return or pass in to methods as arguments have to_json methods. Without
 this, it won't work. 
+
+Because of this, you can expire method results by their "signatures", that is, the object the method is being called on,
+the method name, and it's arguments. To expire a cached result by this signature, call
+
+    Cachely::Mechanics.expire(object, method, *args)
 
 CAVEAT: Do NOT use Cachely for functions that depend on time of day or random numbers, as these are inherently uncachable. 
 If you check the tests out, you'll see random number functions are used exhaustively to test the caching ability of cachely,

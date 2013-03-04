@@ -3,6 +3,7 @@ class DummyClass
   attr_accessor :random_no
   
   cachely :cache_expiry, time_to_expiry: 1.seconds
+  cachely :cache_expiry_3, time_to_expiry: 3.seconds
   
   cachely :class_diff, time_to_expiry: 3.minutes
   
@@ -127,6 +128,10 @@ class DummyClass
     rand(500)
   end
   
+  def cache_expiry_3
+    rand(500)
+  end
+
   def cache_expiry
     rand(500)
   end

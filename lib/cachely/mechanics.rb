@@ -37,7 +37,7 @@ module Cachely
       end
       return @redis  
     end
-    
+   
     # Defines the method using my hacky eval script. So far, this is the only way I've found that
     # allows me to define variable argument length definitions. If you have a better idea, please
     # refactor it!
@@ -48,34 +48,56 @@ module Cachely
       context = (is_class_method ? klazz : klazz.new)
       args_str = context.method("#{name.to_s}_old".to_sym).parameters.map { |k| k.last}.join(',')
       args_to_use_in_def = args_str.empty? ? "" : "," + args_str
+      time_exp_str = time_to_expire_in_s.nil? ? ",nil" : ",time_to_expire_in_s"
       eval("klazz.define_#{is_class_method ? "singleton_" : ""}method(:#{name}) do #{args_str.empty? ? "" : "|#{args_str}|"}; " +
-        "result = Cachely::Mechanics.get(context,:#{name}#{args_to_use_in_def});" +
+        "result = Cachely::Mechanics.get(context,:#{name}#{time_exp_str}#{args_to_use_in_def});" +
         "return result.first if result.is_a?(Array);" + 
         "result = context.send(:#{"#{name.to_s}_old"}#{args_to_use_in_def});" + 
-        "Cachely::Mechanics.store(context,:#{"#{name.to_s}"}, result#{time_to_expire_in_s.nil? ? ",nil": ",#{time_to_expire_in_s}"}#{args_to_use_in_def});" +
+        "Cachely::Mechanics.store(context,:#{"#{name.to_s}"}, result#{time_exp_str}#{args_to_use_in_def});" +
         "return result;" + 
         "end"
       )
     end
-    
-    # Gets a cached response to a method.
+ 
+    # Force-expires a result to a method with this signature given by obj, method, args.
     #
+    # @obj [Object] the object you're calling method on
     # @method [String,Symbol] the method name
     # @args The arguments of the method
     # @return The original response of the method back, whatever it may be.
-    def self.get(obj, method, *args)
-      result = redis.get(redis_key(obj, method, *args))
-      #return an array, bc if the result stored was nil, it looks the same as if
-      #we got no result back(which we would return nil) so we differentiate by putting
-      #our return value always in an array. Easy to check.
-      result.nil? ? nil : [map_s_to_param(result)]
+    def self.expire(obj, method, *args)
+      key = redis_key(obj, method, *args)
+      result = get(obj,method,1,*args)
+      redis.del(key)
+      return result
+    end   
+
+    # Gets a cached response to a method.
+    #
+    # @obj [Object] the object you're calling method on
+    # @time_to_exp_in_s [Fixnum] num of seconds to set expire on key. Needs to be reset.
+    # @method [String,Symbol] the method name
+    # @args The arguments of the method
+    # @return The original response of the method back, whatever it may be.
+    def self.get(obj, method, time_to_exp_in_s, *args)
+      key = redis_key(obj, method, *args)
+      result = redis.get(key)
+      if result
+        redis.expire(key, time_to_exp_in_s) if time_to_exp_in_s #reset the expiry
+        #return an array, bc if the result stored was nil, it looks the same as if
+        #we got no result back(which we would return nil) so we differentiate by putting
+        #our return value always in an array. Easy to check.
+        return [map_s_to_param(result)]
+      end   
     end
     
     # Stores the result in it's proper cached location on redis by getting the redis key and parsing
     # The result into a storable string, mostly made up of recursive json.
     #
+    # @obj [Object] object you call method on
     # @method [Symbol] Method name
     # @result Anything, really.
+    # @time_to_exp_in_s time in seconds before it expires
     # @args Arguments of the method
     # @return [String] Should be "Ok" or something similar.
     def self.store(obj, method, result, time_to_exp_in_sec, *args) 
