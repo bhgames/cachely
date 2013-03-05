@@ -85,6 +85,22 @@ Want to wipe all keys?
 
 And done.
 
+## to_json, the all important method
+
+Cachely relies on the to_json method of objects extensively to work. ActiveRecord to_json methods are supported, as well as to_jsons
+on primitives and what not. If you deign to write your own to_json for your objects, including ARs, good for you, you should. But you should know
+that cachely works partially by instantiating a new instance of your class and calling to_json on it without setting any associations. So, if your to_json method is
+
+    def to_json
+      {
+        "stuff": self.stuff.id
+      }
+    end
+
+Where stuff is some kind of association, it will destroy cachely, because when cachely instantiates this new object with no fields just to get a look at it's field structure,
+it's going to call id on a nil class(stuff is unset.) So think about this when you write to_json methods. I can't protect you from your own stupidity, you really should
+be checking for nilness before you call id. I recommend the gem andand.
+
 ## Caveats
 
 CAVEAT 1: Do NOT use Cachely for functions that depend on time of day or random numbers, as these are inherently uncachable. 
