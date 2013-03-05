@@ -120,7 +120,8 @@ has circular references to itself, don't use cachely then, either.
 
 One exception is ActiveRecord objects, which have already been fixed in this regard. There are three tests in conversion_tests.rb that fail still that deal with this
 caveat. I'll be fixing them in the future and we'll be one caveat shorter.
- 
+
+CAVEAT 3: Do not use Cachely if you are altering arguments that you pass into the method. Cachely isn't running the method if it has a response already stored, so obviously your argument will remain unchanged. I guess I could add support for this in the future, but this is a bit of a complex, nuanced addition and I'd rather not worry about it now. 
 ## Installation
 
 Add this line to your application's Gemfile:
