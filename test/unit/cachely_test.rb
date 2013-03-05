@@ -9,6 +9,13 @@ class CachelyTest < BaseTest
     assert_equal(DummyModelTwo.random(5), DummyModelTwo.random(5))
   end
 
+  test "caches output when its an ar relations object" do
+    assert_nothing_raised(NameError) do
+      DummyClass.get_ar_relations
+      DummyClass.get_ar_relations
+    end
+  end
+
   test "caches output of question mark methods" do
     d = DummyClass.new
     assert_equal(d.question_mark?, d.question_mark?)

@@ -92,7 +92,18 @@ class ConversionsTest < BaseTest
     reformed = Cachely::Mechanics.map_s_to_param(str)
     assert_equal(reformed, DummyClass)
   end
-  
+ 
+  test "orm where conversion" do
+    d = DummyModel.create!(:attr_1 => 1, :attr_2 => 2)
+    str = Cachely::Mechanics.map_param_to_s(DummyModel.where(:attr_1 => 1))
+    assert_nothing_raised(NameError) do
+      respawned = Cachely::Mechanics.map_s_to_param(str)
+      first = respawned.first
+      assert_equal(d.id, first.id)
+      assert_equal(d.attr_1, first.attr_1)
+    end
+  end
+ 
   test "orm conversion" do
     d = DummyModel.create!(:attr_1 => rand(500), :attr_2 => rand(500))
     str = Cachely::Mechanics.map_param_to_s(d)

@@ -122,6 +122,9 @@ One exception is ActiveRecord objects, which have already been fixed in this reg
 caveat. I'll be fixing them in the future and we'll be one caveat shorter.
 
 CAVEAT 3: Do not use Cachely if you are altering arguments that you pass into the method. Cachely isn't running the method if it has a response already stored, so obviously your argument will remain unchanged. I guess I could add support for this in the future, but this is a bit of a complex, nuanced addition and I'd rather not worry about it now. 
+
+CAVEAT 4: Do not use on functions that return ActiveRecord::Relation objects, or use them as arguments. They can't be instantiated normally and I haven't added support for them yet. I have added two tests for them, and they still fail. So if you can write a fix, and it passes these tests, go for it!
+
 ## Installation
 
 Add this line to your application's Gemfile:

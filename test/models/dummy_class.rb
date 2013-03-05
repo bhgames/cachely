@@ -99,7 +99,9 @@ class DummyClass
   cachely :class_to_json, time_to_expiry: 3.minutes
   cachely :class_to_json_one, time_to_expiry: 3.minutes
   cachely :class_to_json_two, time_to_expiry: 3.minutes
-  
+ 
+  cachely :get_ar_relations
+ 
   def to_json
     {
       "random_no" => self.random_no
@@ -108,6 +110,11 @@ class DummyClass
 
   def question_mark?
     rand(500)
+  end
+
+  def self.get_ar_relations
+    DummyModel.create!(:attr_1 => 1)
+    DummyModel.where(:attr_1=>1)
   end
  
   def self.question_mark?
