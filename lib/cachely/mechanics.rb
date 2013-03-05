@@ -75,7 +75,7 @@ module Cachely
         "time_1 = Time.now;" + 
         "result = Cachely::Mechanics.get(self,:#{name}#{time_exp_str}#{args_to_use_in_def});" +
         "time_2 = Time.now;" +
-        "total_time = time_2-time_1; p 'Whole call took ' + total_time.to_s if Cachely::Mechanics.logging and result.is_a?(Array);" + 
+        "total_time = time_2-time_1; p 'Whole call took, on successful get, ' + total_time.to_s if Cachely::Mechanics.logging and result.is_a?(Array);" + 
         "return result.first if result.is_a?(Array);" + 
         "result = self.send(:#{"#{name.to_s.gsub("?",'')}_old"}#{args_to_use_in_def});" + 
         "Cachely::Mechanics.store(self,:#{"#{name.to_s}"}, result#{time_exp_str}#{args_to_use_in_def});" +
@@ -117,20 +117,20 @@ module Cachely
     # @args The arguments of the method
     # @return The original response of the method back, whatever it may be.
     def self.get(obj, method, time_to_exp_in_s, *args)
-      key = redis_key(obj, method, *args)
       time_1 = Time.now
+      key = redis_key(obj, method, *args)
       result = redis.get(key)
-      time_2 = Time.now
-      p "GET for #{method} took #{time_2-time_1}" if @logging
+      p "GET for #{method} took #{Time.now-time_1}" if @logging and !result
       if result
         redis.expire(key, time_to_exp_in_s) if time_to_exp_in_s #reset the expiry
-
-        @logged_cached_calls_amt +=1
-        @logged_cached_calls_avg+=(time_2-time_1)
 
         #return an array, bc if the result stored was nil, it looks the same as if
         #we got no result back(which we would return nil) so we differentiate by putting
         #our return value always in an array. Easy to check.
+        time_2 = Time.now
+        p "GET for #{method} took, on succ get, #{time_2-time_1}" if @logging
+        @logged_cached_calls_amt +=1
+        @logged_cached_calls_avg+=(time_2-time_1)
         return [map_s_to_param(result)]
       end   
     end
