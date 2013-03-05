@@ -94,7 +94,7 @@ that cachely works partially by instantiating a new instance of your class and c
     def to_json
       {
         "stuff": self.stuff.id
-      }
+      }.to_json
     end
 
 Where stuff is some kind of association, it will destroy cachely, because when cachely instantiates this new object with no fields just to get a look at it's field structure,
