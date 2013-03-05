@@ -12,6 +12,7 @@ module Cachely
         :port => opts[:port],
         :password => opts[:password],
         :driver => opts[:driver])
+      @logging = opts[:logging]
     end
     
     # Flush the Redis store of all keys.
@@ -66,6 +67,7 @@ module Cachely
         "return result;" + 
         "end"
       )
+      
       eval(to_def)
     end
  
@@ -91,10 +93,11 @@ module Cachely
     # @return The original response of the method back, whatever it may be.
     def self.get(obj, method, time_to_exp_in_s, *args)
       key = redis_key(obj, method, *args)
+      time_1 = Time.now
       result = redis.get(key)
-      p "searchign for #{key}"
+      time_2 = Time.now
+      p "GET took #{time_2-time_1}" if @logging
       if result
-        p "retyurning #{key}"
         redis.expire(key, time_to_exp_in_s) if time_to_exp_in_s #reset the expiry
         #return an array, bc if the result stored was nil, it looks the same as if
         #we got no result back(which we would return nil) so we differentiate by putting
@@ -113,7 +116,6 @@ module Cachely
     # @args Arguments of the method
     # @return [String] Should be "Ok" or something similar.
     def self.store(obj, method, result, time_to_exp_in_sec, *args) 
-      p "storing #{redis_key(obj, method, *args)}"
       redis.set(redis_key(obj, method, *args), map_param_to_s(result))
       redis.expire(redis_key(obj, method, *args), time_to_exp_in_sec) if time_to_exp_in_sec
     end

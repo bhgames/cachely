@@ -43,8 +43,8 @@ In order to make this work, you must connect to a redis store using the method:
 
 		Cachely::Mechanics.connect(opts = {})
 
-Opts accepts keys :host, :port, :password, :driver. See redis-rb documentation for which drivers you want,
-including whether or not you wish it to be evented.
+Opts accepts keys :host, :port, :password, :driver, and :logging. See redis-rb documentation for which drivers you want,
+including whether or not you wish it to be evented. The :logging key is cachely only, it turns on performance logging.
 
 I'd recommend doing this in a Rails initializer, or if you're using sinatra or other rack app, in config.ru.
 
@@ -120,8 +120,7 @@ has circular references to itself, don't use cachely then, either.
 
 One exception is ActiveRecord objects, which have already been fixed in this regard. There are three tests in conversion_tests.rb that fail still that deal with this
 caveat. I'll be fixing them in the future and we'll be one caveat shorter.
-
-  
+ 
 ## Installation
 
 Add this line to your application's Gemfile:
