@@ -10,4 +10,11 @@ class DummyModelTwo < ActiveRecord::Base
   def self.random(arg)
     rand(500)
   end
+
+  def to_json
+    {
+      :id => self.id,
+      :attr_1 => self.attr_1
+    }.to_json
+  end
 end

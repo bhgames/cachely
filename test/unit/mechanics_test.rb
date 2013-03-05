@@ -14,7 +14,15 @@ class MechanicsTest < BaseTest
     assert_equal(1, respawned.keys.size)
     assert_equal("baz", respawned[:bar])
   end
-  
+ 
+  test "get/store orm with predefined to_json" do
+    d = DummyModelTwo.create!(:attr_1 => 1)
+    Cachely::Mechanics.store(DummyClass,:foo, d,nil,[3,4])
+    respawned = Cachely::Mechanics.get(DummyClass,:foo, nil, [3,4]).first
+    assert_equal(d.id, respawned.id)
+    assert_equal(d.attr_1, respawned.attr_1)
+  end 
+
   test "get/store orm" do
     d = DummyModel.create!(:attr_1 => 1, :attr_2 => 3)
     Cachely::Mechanics.store(DummyClass,:foo, d,nil,[3,4])

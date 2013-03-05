@@ -112,6 +112,7 @@ module Cachely
     # @args Arguments of the method
     # @return [String] Should be "Ok" or something similar.
     def self.store(obj, method, result, time_to_exp_in_sec, *args) 
+      p "storing #{redis_key(obj, method, *args)}"
       redis.set(redis_key(obj, method, *args), map_param_to_s(result))
       redis.expire(redis_key(obj, method, *args), time_to_exp_in_sec) if time_to_exp_in_sec
     end
@@ -191,7 +192,6 @@ module Cachely
         return DateTime.parse(data).to_date
       else
         class_or_instance == "instance" ? obj = Object.const_get(type).new : obj = Object.const_get(type)
-
         JSON.parse(data).each do |key, value|
           obj.send(key+"=",value) if obj.respond_to?(key+"=")
         end
@@ -234,9 +234,11 @@ module Cachely
           translated = "instance|DateTime|" + p.to_s
         elsif p.is_a?(Date)
           translated = "instance|Date|" + p.to_s
-        elsif p.is_a?(ActiveRecord::Base)
+        elsif p.is_a?(ActiveRecord::Base) and JSON.parse(p.to_json)[p.class.to_s.underscore]
           #don't want { "dummy_model" = > {:attributes => 1}}
           #want {:attributes => 1}
+          #this is default AR to_json
+          #we use normal else below if own to_json method defined.
           translated = "instance|#{p.class.to_s}|#{JSON.parse(p.to_json)[p.class.to_s.underscore].to_json}"
         else
           my_json = nil
