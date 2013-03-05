@@ -6,7 +6,9 @@ class DummyClass
   cachely :cache_expiry_3, time_to_expiry: 3.seconds
   
   cachely :class_diff, time_to_expiry: 3.minutes
-  
+
+  cachely :question_mark?
+ 
   cachely :instance_only_cache, time_to_expiry: 3.minutes, type: "instance"
   cachely :class_only_cache, time_to_expiry: 3.minutes, type: "class"
   
@@ -102,6 +104,14 @@ class DummyClass
     {
       "random_no" => self.random_no
     }.to_json
+  end
+
+  def question_mark?
+    rand(500)
+  end
+ 
+  def self.question_mark?
+    rand(500)
   end
   
   def instance_only_cache

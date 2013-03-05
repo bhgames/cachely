@@ -13,9 +13,9 @@ module Cachely
     # @name [Symbol] fcn name
     # @return nil
     def singleton_method_added(name)
-      if(@cachely_fcns and @cachely_fcns.include?(name) and !self.respond_to?("#{name.to_s}_old".to_sym))
+      if(@cachely_fcns and @cachely_fcns.include?(name) and !self.respond_to?("#{name.to_s.gsub("?",'')}_old".to_sym))
         unless(@cachely_opts[name][:type] and @cachely_opts[name][:type] == "instance")
-          self.instance_eval("alias :#{"#{name.to_s}_old".to_sym} :#{name}")
+          self.instance_eval("alias :#{"#{name.to_s.gsub("?",'')}_old".to_sym} :#{name}")
           Cachely::Mechanics.setup_method(self,name, @cachely_opts[name][:time_to_expiry], true)
         end
       end
@@ -28,10 +28,10 @@ module Cachely
     # @name [Symbol] fcn name
     # @return nil
     def method_added(name)
-      if(@cachely_fcns and @cachely_fcns.include?(name) and !self.new.respond_to?("#{name.to_s}_old".to_sym))
+      if(@cachely_fcns and @cachely_fcns.include?(name) and !self.new.respond_to?("#{name.to_s.gsub("?",'')}_old".to_sym))
         # only do this if we either haven't explicitly labeled fcn type, or it's not class.
         unless(@cachely_opts[name][:type] and @cachely_opts[name][:type] == "class")
-          self.class_eval("alias :#{"#{name.to_s}_old".to_sym} :#{name}") #alias old function out
+          self.class_eval("alias :#{"#{name.to_s.gsub("?",'')}_old".to_sym} :#{name}") #alias old function out
           Cachely::Mechanics.setup_method(self,name, @cachely_opts[name][:time_to_expiry])
         end
       end

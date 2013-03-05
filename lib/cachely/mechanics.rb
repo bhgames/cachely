@@ -7,12 +7,24 @@ module Cachely
     # @opt [Hash<Symbol>] 
     # @return [Boolean] success or not
     def self.connect(opts = {})
+      @opts ||= opts.symbolize_keys
       @redis ||= Redis.new(
-        :host => opts[:host], 
-        :port => opts[:port],
-        :password => opts[:password],
-        :driver => opts[:driver])
-      @logging = opts[:logging]
+        :host => @opts[:host], 
+        :port => @opts[:port],
+        :password => @opts[:password],
+        :driver => @opts[:driver])
+      @logging = @opts[:logging]
+      @logged_cached_calls_avg = 0
+      @logged_cached_calls_amt = 0
+      @logged_uncached_calls_avg = 0
+      @logged_uncached_calls_amt = 0
+    end
+
+    # Returns whether logging is present.
+    #
+    # @return [Boolean] Logging on or not
+    def self.logging
+      @logging    
     end
     
     # Flush the Redis store of all keys.
@@ -47,7 +59,7 @@ module Cachely
     # @return nil
     def self.setup_method(klazz, name, time_to_expire_in_s, is_class_method = false) 
       context = (is_class_method ? klazz : klazz.new)
-      args_str = context.method("#{name.to_s}_old".to_sym).parameters.map { |k| k.last}.join(',')
+      args_str = context.method("#{name.to_s.gsub("?",'')}_old".to_sym).parameters.map { |k| k.last}.join(',')
       args_to_use_in_def = args_str.empty? ? "" : "," + args_str
       time_exp_str = time_to_expire_in_s.nil? ? ",nil" : ",time_to_expire_in_s"
 
@@ -60,14 +72,18 @@ module Cachely
       end
 
       to_def = ("#{to_def_header} #{args_str.empty? ? "" : "|#{args_str}|"}; " +
+        "time_1 = Time.now;" + 
         "result = Cachely::Mechanics.get(self,:#{name}#{time_exp_str}#{args_to_use_in_def});" +
+        "time_2 = Time.now;" +
+        "total_time = time_2-time_1; p 'Whole call took ' + total_time.to_s if Cachely::Mechanics.logging and result.is_a?(Array);" + 
         "return result.first if result.is_a?(Array);" + 
-        "result = self.send(:#{"#{name.to_s}_old"}#{args_to_use_in_def});" + 
+        "result = self.send(:#{"#{name.to_s.gsub("?",'')}_old"}#{args_to_use_in_def});" + 
         "Cachely::Mechanics.store(self,:#{"#{name.to_s}"}, result#{time_exp_str}#{args_to_use_in_def});" +
+        "time_2 = Time.now;" + 
+        "total_time = time_2-time_1; p 'Whole call took ' + total_time.to_s if Cachely::Mechanics.logging;" + 
         "return result;" + 
         "end"
       )
-      
       eval(to_def)
     end
  
@@ -84,6 +100,15 @@ module Cachely
       result.nil? ? nil : result.first
     end   
 
+    # returns avg cached and uncached response times for methods.
+    #
+    #
+    # @return [String] Info on methods
+    def self.monitoring
+      return "Avg cached call is currently #{@logged_cached_calls_avg.to_f/@logged_cached_calls_amt.to_f}" +
+      "Avg uncached call is currently #{@logged_uncached_calls_avg.to_f/@logged_uncached_calls_amt.to_f}"
+    end
+
     # Gets a cached response to a method.
     #
     # @obj [Object] the object you're calling method on
@@ -96,9 +121,13 @@ module Cachely
       time_1 = Time.now
       result = redis.get(key)
       time_2 = Time.now
-      p "GET took #{time_2-time_1}" if @logging
+      p "GET for #{method} took #{time_2-time_1}" if @logging
       if result
         redis.expire(key, time_to_exp_in_s) if time_to_exp_in_s #reset the expiry
+
+        @logged_cached_calls_amt +=1
+        @logged_cached_calls_avg+=(time_2-time_1)
+
         #return an array, bc if the result stored was nil, it looks the same as if
         #we got no result back(which we would return nil) so we differentiate by putting
         #our return value always in an array. Easy to check.
@@ -115,9 +144,17 @@ module Cachely
     # @time_to_exp_in_s time in seconds before it expires
     # @args Arguments of the method
     # @return [String] Should be "Ok" or something similar.
-    def self.store(obj, method, result, time_to_exp_in_sec, *args) 
+    def self.store(obj, method, result, time_to_exp_in_sec, *args)
+      time_1 = Time.now 
       redis.set(redis_key(obj, method, *args), map_param_to_s(result))
-      redis.expire(redis_key(obj, method, *args), time_to_exp_in_sec) if time_to_exp_in_sec
+      to_ret = redis.expire(redis_key(obj, method, *args), time_to_exp_in_sec) if time_to_exp_in_sec
+      time_2 = Time.now
+      p "STORE for #{method} took #{time_2-time_1}" if @logging
+
+      @logged_uncached_calls_amt+=1
+      @logged_uncached_calls_avg+=(time_2-time_1)
+
+      return to_ret
     end
     
     # Converts method name and arguments into a coherent key. Creates a hash and to_jsons it

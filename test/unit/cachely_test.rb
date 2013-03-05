@@ -9,6 +9,12 @@ class CachelyTest < BaseTest
     assert_equal(DummyModelTwo.random(5), DummyModelTwo.random(5))
   end
 
+  test "caches output of question mark methods" do
+    d = DummyClass.new
+    assert_equal(d.question_mark?, d.question_mark?)
+    assert_equal(DummyClass.question_mark?, DummyClass.question_mark?)
+  end
+
   test "caches output of instance and class methods primitive" do
     ["instance","class"].each do |preset|
       [
