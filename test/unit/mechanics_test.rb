@@ -23,6 +23,13 @@ class MechanicsTest < BaseTest
     assert_equal(d.attr_1, respawned.attr_1)
   end 
 
+  test "orm with method that depends on its attributes has its attributes set when called" do
+    d = DummyModel.create!(:attr_1 => 1, :attr_2 => 3)
+    assert_nothing_raised(ZeroDivisionError) do 
+      assert_equal(d.use_attributes, d.use_attributes)
+    end
+  end
+
   test "get/store orm" do
     d = DummyModel.create!(:attr_1 => 1, :attr_2 => 3)
     Cachely::Mechanics.store(DummyClass,:foo, d,nil,[3,4])

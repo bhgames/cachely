@@ -59,10 +59,10 @@ module Cachely
       end
 
       to_def = ("#{to_def_header} #{args_str.empty? ? "" : "|#{args_str}|"}; " +
-        "result = Cachely::Mechanics.get(context,:#{name}#{time_exp_str}#{args_to_use_in_def});" +
+        "result = Cachely::Mechanics.get(self,:#{name}#{time_exp_str}#{args_to_use_in_def});" +
         "return result.first if result.is_a?(Array);" + 
-        "result = context.send(:#{"#{name.to_s}_old"}#{args_to_use_in_def});" + 
-        "Cachely::Mechanics.store(context,:#{"#{name.to_s}"}, result#{time_exp_str}#{args_to_use_in_def});" +
+        "result = self.send(:#{"#{name.to_s}_old"}#{args_to_use_in_def});" + 
+        "Cachely::Mechanics.store(self,:#{"#{name.to_s}"}, result#{time_exp_str}#{args_to_use_in_def});" +
         "return result;" + 
         "end"
       )
@@ -92,6 +92,7 @@ module Cachely
     def self.get(obj, method, time_to_exp_in_s, *args)
       key = redis_key(obj, method, *args)
       result = redis.get(key)
+      p "searchign for #{key}"
       if result
         p "retyurning #{key}"
         redis.expire(key, time_to_exp_in_s) if time_to_exp_in_s #reset the expiry
