@@ -49,7 +49,16 @@ module Cachely
       args_str = context.method("#{name.to_s}_old".to_sym).parameters.map { |k| k.last}.join(',')
       args_to_use_in_def = args_str.empty? ? "" : "," + args_str
       time_exp_str = time_to_expire_in_s.nil? ? ",nil" : ",time_to_expire_in_s"
-      to_def = ("klazz.define_#{is_class_method ? "singleton_" : ""}method(:#{name}) do #{args_str.empty? ? "" : "|#{args_str}|"}; " +
+
+      to_def_header=nil
+
+      if is_class_method
+        to_def_header = "klazz.define_singleton_method(:#{name}) do"
+      else
+        to_def_header = "klazz.send(:define_method, :#{name}) do"
+      end
+
+      to_def = ("#{to_def_header} #{args_str.empty? ? "" : "|#{args_str}|"}; " +
         "result = Cachely::Mechanics.get(context,:#{name}#{time_exp_str}#{args_to_use_in_def});" +
         "return result.first if result.is_a?(Array);" + 
         "result = context.send(:#{"#{name.to_s}_old"}#{args_to_use_in_def});" + 
@@ -57,7 +66,6 @@ module Cachely
         "return result;" + 
         "end"
       )
-      binding.pry
       eval(to_def)
     end
  

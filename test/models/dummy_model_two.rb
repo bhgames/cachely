@@ -1,13 +1,13 @@
 class DummyModelTwo < ActiveRecord::Base
   include Cachely
-  attr_accessible :attr_1
-  cachely :i_random
   cachely :random
-  def i_random
+  attr_accessible :attr_1
+
+  def random(arg)
     rand(500)
   end
 
-  def self.random
+  def self.random(arg)
     rand(500)
   end
 end

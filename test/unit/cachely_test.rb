@@ -5,8 +5,8 @@ class CachelyTest < BaseTest
 
   test "caches output of methods in orm object" do
     d = DummyModelTwo.create!(:attr_1 => rand(500)) 
-    assert_equal(d.i_random, d.i_random)
-    assert_equal(DummyModelTwo.random, DummyModelTwo.random)
+    assert_equal(d.random(5), d.random(5))
+    assert_equal(DummyModelTwo.random(5), DummyModelTwo.random(5))
   end
 
   test "caches output of instance and class methods primitive" do
