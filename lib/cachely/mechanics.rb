@@ -127,11 +127,15 @@ module Cachely
         #return an array, bc if the result stored was nil, it looks the same as if
         #we got no result back(which we would return nil) so we differentiate by putting
         #our return value always in an array. Easy to check.
+
+        mapped_result = map_s_to_param(result)
+
         time_2 = Time.now
         p "GET for #{method} took, on succ get, #{time_2-time_1}" if @logging
         @logged_cached_calls_amt +=1
         @logged_cached_calls_avg+=(time_2-time_1)
-        return [map_s_to_param(result)]
+
+        return [mapped_result]
       end   
     end
     
@@ -169,7 +173,19 @@ module Cachely
         :args => args
       })
     end
-    
+   
+    # Logs a statement in the block with a print message.
+    #
+    # @message [String] Message to print.
+    # @return [Fixnum] returns time it took.
+    def self.log(message=nil, &block)
+      time_1 = Time.now
+      yield
+      time_2 = Time.now
+      p "Time took #{time_2-time_1} for #{message}" if @logging and message
+      return (time_2-time_1)
+    end
+
     # Turns any string into a parameter. Current supported types are primitives, orm models
     # That respond to id and have an updated_at field, and objects that have a to_json method.
     #
@@ -180,8 +196,11 @@ module Cachely
         respawned_hash = JSON.parse(s)
         
         if respawned_hash.is_a?(Array)
+          i = 0
           respawned_hash.map! do |piece|
-            map_s_to_param(piece)
+            time = log do
+              map_s_to_param(piece)
+            end
           end
         elsif respawned_hash.is_a?(Hash)
           respawned_hash = respawned_hash.inject(Hash.new) do |new_hash, entry|
